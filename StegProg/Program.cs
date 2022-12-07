@@ -9,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Security;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,14 +24,16 @@ namespace StegProg
             //string[] parameters = Console.ReadLine().Split(' ');
             string path = @"C:\Users\b190\Pictures\M113086-Neapolitanische_Pizza_112317_Titelbild-Q75-750.jpg";
             string fileName = @"C:\Users\b190\Pictures\neuesBild.bmp";
+            string secret = "This is a secret";
 
 
             while ( true)
             {
                 Bitmap bitmap = GetBitmap(path);
                 bitmap = getArgb(bitmap);
-                //bitmap = hideLSB(bitmap, new BitArray(new bool[5] { true, true, false, false, false }));
-                saveImage(bitmap, fileName);
+                Bitmap steg = hideLSB(bitmap, getBits(secret));
+                showLSB(steg, getBits(secret));
+                //saveImage(bitmap, fileName);
                 Console.ReadKey();
             }
 
@@ -52,6 +55,23 @@ namespace StegProg
                 graphics.Flush();
             }
             return bitmapargb;
+        }
+        static string convertBitsToString(BitArray bitArray)
+        {
+            if (bitArray.Length % 8 != 0)
+            {
+                throw new Exception("incomplete input");
+            }
+            Byte[] bytes= new Byte[bitArray.Length/8];
+            bitArray.CopyTo(bytes, 0);
+            return Encoding.Unicode.GetString(bytes);   
+
+        }
+
+        static BitArray getBits(string secret)
+        {
+            return new BitArray( Encoding.Unicode.GetBytes(secret));
+
         }
         
         static Bitmap hideLSB(Image image, BitArray data)
@@ -91,6 +111,36 @@ namespace StegProg
 
 
             return bitmap;
+        }
+
+        static void showLSB(Bitmap bitmap, BitArray bitarray)
+        {
+            BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            Byte[] bytebuffer = new byte[bitmapData.Stride * bitmap.Height];
+
+            IntPtr intPtr = bitmapData.Scan0;
+
+            Marshal.Copy(intPtr, bytebuffer, 0, bytebuffer.Length);
+
+            List<bool> tempResult = new List<bool>();
+
+            for ( int i = 0; i < bitarray.Length; i ++)
+            {
+                if (bytebuffer[i] % 2 == 0)
+                {
+                    tempResult.Add(false);
+                }
+                else
+                {
+                    tempResult.Add(true);
+                }
+            }
+            BitArray result = new BitArray(tempResult.ToArray());
+
+            Console.WriteLine(result.ToString());
+            Console.WriteLine(convertBitsToString(result));
+            Console.WriteLine(result.Equals(bitarray));
+            Console.ReadLine();
         }
 
         static void saveImage(Bitmap bitmap, string filename)
