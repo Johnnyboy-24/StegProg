@@ -10,7 +10,7 @@ namespace StegProg
 {
     public interface ISteganograph
     {
-        Bitmap Hide(Image container, BitArray secret);
-        void Unvail(Bitmap bitmap);
+        Bitmap Hide(Bitmap container, BitArray secret);
+        void Unvail(Bitmap image);
     }
 }

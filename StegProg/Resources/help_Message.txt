@@ -1,0 +1,11 @@
+-h : print help
+
+-m : pass message to be encrypted
+
+-p : pass the filepath of the picture you want to use as the container or derieve the hidden message from
+
+-o : Opreation-mode --> pick either LSB or Parity
+
+-e : decrypt / encrypt 
+
+-c : codeblock length for Parity mode --> default is set to 4

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -22,49 +23,30 @@ namespace StegProg
         
         static void Main(string[] args)
         {
-            string fileName = @"C:\Users\b190\Pictures\neuesBildd.bmp";
-            string secret = "This is a secret";
-            string[] parameters;
             Parser parser = new Parser();
-            LSB lSB = new LSB();
-
+            Console.Write(StegProg.Properties.Resources.Welcome_Message);
+            
             while (!parser.exit)
-            {
-                parameters = Console.ReadLine().Split(' ');
-                parser.parse(parameters);
-                Bitmap imageWithSecret = lSB.Hide(GetBitmap(parser.path), getBits(secret));
-                lSB.Unvail(imageWithSecret);
-                Console.ReadKey();
+            {            
+                parser.parse();
+                if (parser.inputIsSufficient())
+                {
+                    runBAasedOnParserParams(parser);
+                }
+                
             }
         }
-        
-        static Bitmap GetBitmap(string path)
+        static void runBAasedOnParserParams(Parser parser)
         {
-            return new Bitmap(Image.FromFile(path));
-        }
-        
-        static Bitmap getArgb(Image image)
-        {
-            Bitmap bitmapargb = new Bitmap(image.Width, image.Height, PixelFormat.Format32bppArgb);
-            using(Graphics graphics = Graphics.FromImage(bitmapargb))
+            if(parser.encryptionMode == EncryptionMode.encrypt)
             {
-                graphics.DrawImage(image, new Rectangle(0,0, bitmapargb.Width, bitmapargb.Height));
-                graphics.Flush();
+                Bitmap result = parser.steganograph.Hide(Utility.GenerateBitmap(parser.path), Utility.getBits(parser.secret));
+                Utility.saveImage(result, parser.fileName);
             }
-            return bitmapargb;
+            if(parser.encryptionMode == EncryptionMode.decrypt)
+            {
+                parser.steganograph.Unvail(Utility.GenerateBitmap(parser.path));
+            }
         }
-
-        static BitArray getBits(string secret)
-        {
-            return new BitArray( Encoding.Unicode.GetBytes(secret));
-
-        }
-        
-        static void saveImage(Bitmap bitmap, string filename)
-        {
-            bitmap.Save(filename, ImageFormat.Bmp);
-        }
-
-        
     }
 }

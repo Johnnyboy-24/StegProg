@@ -24,13 +24,10 @@ namespace StegProg
 
         public static string convertBitsToString(BitArray bitArray)
         {
-            if (bitArray.Length % 8 != 0)
-            {
-                throw new Exception("incomplete input");
-            }
-            Byte[] bytes = new Byte[bitArray.Length / 8];
+            Byte[] bytes = new Byte[bitArray.Length / 8 + 1 ];
             bitArray.CopyTo(bytes, 0);
-            return Encoding.Unicode.GetString(bytes);
+            string message = Encoding.Unicode.GetString(bytes);
+            return message;
 
         }
     }

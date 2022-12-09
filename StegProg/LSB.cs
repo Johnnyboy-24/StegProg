@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.Win32.SafeHandles;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -14,76 +16,61 @@ namespace StegProg
     public class LSB : ISteganograph
     {
         public LSB() { }
-        public Bitmap Hide(System.Drawing.Image container, BitArray secret)
+
+        public Bitmap Hide(Bitmap image, BitArray secret)
         {
-            Bitmap bitmap = Converter.convertImageToArgb(container);
-            BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            Color actual;
+            Color newColor;
+            int indexer = 0;
+            bool lsbValue = false;
+            byte alphaValue;
+            Bitmap newImage = new Bitmap(image.Width, image.Height); 
 
-            IntPtr intPtr = bitmapData.Scan0;
-
-            byte[] bytebuffer = new byte[bitmapData.Stride * bitmap.Height];
-
-            if (bytebuffer.Length < secret.Length)
+            for (int i =0; i< image.Width; i++)
             {
-                throw new Exception("Daten sind zu groß, um sie per LSB im Bild zu verstecken");
+                for (int j= 0; j<image.Height; j++)
+                {
+                    actual = image.GetPixel(i, j);
+                    if(indexer < secret.Length)
+                    {
+                        lsbValue = secret[indexer];
+                    }
+                    if(lsbValue == true)
+                    {
+                        alphaValue = (byte)(actual.R | 1);
+                    }
+                    else
+                    {
+                        alphaValue = (byte)((actual.R & 254));                        
+                    }
+                    newColor = Color.FromArgb(actual.A, alphaValue, actual.G,actual.B);
+                    newImage.SetPixel(i, j, newColor);
+
+                    indexer++;
+                }
             }
-
-            Marshal.Copy(intPtr, bytebuffer, 0, bytebuffer.Length);
-
-            for (int i = 0; i < bytebuffer.Length; i++)
-            {
-                bool intendedvalueOfBit = false;
-
-                if (i < secret.Length)
-                {
-                    intendedvalueOfBit = secret[i];
-                }
-                if (intendedvalueOfBit == true && bytebuffer[i] % 2 == 0)
-                {
-                    bytebuffer[i]++;
-                }
-                if (intendedvalueOfBit == false && bytebuffer[i] % 2 == 1)
-                {
-                    bytebuffer[i]--;
-                }
-            }
-
-            Marshal.Copy(bytebuffer, 0, intPtr, bytebuffer.Length);
-
-            bitmap.UnlockBits(bitmapData);
-
-            bitmapData = null;
-            bytebuffer = null;
-
-
-            return bitmap;
+            return newImage;
         }
 
-        public void Unvail(Bitmap bitmap)
+        public void Unvail(Bitmap image)
         {
-            BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
-            Byte[] bytebuffer = new byte[bitmapData.Stride * bitmap.Height];
-
-            IntPtr intPtr = bitmapData.Scan0;
-
-            Marshal.Copy(intPtr, bytebuffer, 0, bytebuffer.Length);
+            
 
             List<bool> tempResult = new List<bool>();
+            Color color;
 
-            for (int i = 0; i < bytebuffer.Length; i++)
+            for(int i = 0; i< image.Width; i++)
             {
-                if (bytebuffer[i] % 2 == 0)
+                for (int j = 0; j < image.Height; j++)
                 {
-                    tempResult.Add(false);
-                }
-                else
-                {
-                    tempResult.Add(true);
+                    color = image.GetPixel(i,j);
+                    tempResult.Add((byte)(color.R & (byte)1) != 0);
                 }
             }
             BitArray result = new BitArray(tempResult.ToArray());
 
             Console.WriteLine(Converter.convertBitsToString(result));
         }
+        
     }
 }
