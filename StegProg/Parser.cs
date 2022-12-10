@@ -44,7 +44,7 @@ namespace StegProg
                             break;
 
                         case "-p":
-                            try { path = @parameters[i + 1]; }
+                            try { path = parameters[i + 1].Trim('"'); }
                             catch (ArgumentNullException) { Console.WriteLine("No Path was passed! Use -p to pass a path or refer to -h for help. "); }
                             catch (ArgumentException) { Console.WriteLine("File needs to be of type: .txt!"); }
                             break;
@@ -61,36 +61,35 @@ namespace StegProg
 
                         case "encrypt":
                             encryptionMode= EncryptionMode.encrypt;
+                            Console.Write("Please enter the Message you want to hide: ");
+                            secret = Console.ReadLine();
                             break;
 
                         case "decrypt":
                             encryptionMode= EncryptionMode.decrypt;
                             break;
 
-                        case "-m": 
-                            secret = parameters[i+1];
-                            break;
                         default:
                             break;
                     }
                 }
-
             }
-        
         }
 
         public bool inputIsSufficient()
         {
             if(path == string.Empty)
             {
-                Console.WriteLine("Please make sure to pas a path");
+                Console.WriteLine("Please make sure to pass a path");
                 return false;
             }
+
             if (secret == string.Empty && encryptionMode == EncryptionMode.encrypt)
             {
                 Console.WriteLine("Please make sure to pass a message");
                 return false;
             }
+
             return true;
             
         }
