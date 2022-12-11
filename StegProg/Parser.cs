@@ -26,7 +26,7 @@ namespace StegProg
             secret= string.Empty;
             exit = false;
             steganograph = new Parity(4);
-            fileName = @"C:\Users\b190\Pictures\DiesisteinBild.bmp";
+            fileName = @"$USERPATH$/Filename.bmp";
         }
         public void parse()
         {
