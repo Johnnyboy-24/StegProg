@@ -12,7 +12,7 @@ namespace StegProg
     public enum EncryptionMode {encrypt, decrypt}
     internal class Parser
     {
-        public string fileName { get; set; }
+        private string fileName { get; set; }
         public string path { get; set; }
         public bool exit { get; set; }
         public string secret { get; set; }
@@ -26,7 +26,7 @@ namespace StegProg
             secret= string.Empty;
             exit = false;
             steganograph = new Parity(4);
-            fileName = @"$USERPATH$/Filename.bmp";
+            fileName =  @"/Filename.bmp";
         }
         public void parse()
         {
@@ -93,5 +93,9 @@ namespace StegProg
             return true;
             
         }
+         public string getFilename()
+         {
+            return Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + fileName;
+         }
     }
 }

@@ -25,7 +25,7 @@ namespace StegProg
         {
             Parser parser = new Parser();
             Console.Write(StegProg.Properties.Resources.Welcome_Message);
-            
+          
             while (!parser.exit)
             {            
                 parser.parse();
@@ -41,7 +41,7 @@ namespace StegProg
             if(parser.encryptionMode == EncryptionMode.encrypt)
             {
                 Bitmap result = parser.steganograph.Hide(Utility.GenerateBitmap(parser.path), Utility.getBits(parser.secret));
-                Utility.saveImage(result, parser.fileName);
+                Utility.saveImage(result, parser.getFilename());
             }
             if(parser.encryptionMode == EncryptionMode.decrypt)
             {
